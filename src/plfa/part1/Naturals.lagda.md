@@ -78,7 +78,8 @@ successor of two; and so on.
 Write out `7` in longhand.
 
 ```agda
--- Your code goes here
+seven : ℕ
+seven = suc (suc (suc ( suc ( suc ( suc (suc zero))))))
 ```
 
 You will need to give both a type signature and definition for the
@@ -515,9 +516,14 @@ Define exponentiation, which is given by the following equations:
 Check that `3 ^ 4` is `81`.
 
 ```agda
--- Your code goes here
-```
+_^_ : ℕ → ℕ → ℕ
+_ ^ 0       = 1
+x ^ (suc n) = x * (x ^ n)
 
+_ : (3 ^ 4) ≡ 81
+_ = refl
+
+```
 
 
 ## Monus
