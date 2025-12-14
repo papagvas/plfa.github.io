@@ -952,6 +952,19 @@ Confirm that these both give the correct answer for zero through four.
 
 ```agda
 -- Your code goes here
+inc : Bin → Bin
+inc ⟨⟩ = ⟨⟩ I
+inc (bin O) = bin I
+inc (bin I) = inc bin O
+
+to : ℕ → Bin
+to zero = ⟨⟩
+to (suc n) = inc (to n)
+
+from : Bin → ℕ
+from ⟨⟩ = zero
+from (b O) = 2 * (from b)
+from (b I) = suc (2 * (from b))
 ```
 
 

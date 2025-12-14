@@ -719,6 +719,7 @@ first four days using a finite story of creation, as
 
 ```agda
 -- Your code goes here
+
 ```
 
 ## Associativity with rewrite
@@ -891,6 +892,8 @@ is associative and commutative.
 
 ```agda
 -- Your code goes here
++-swap : ∀ (m n p : ℕ) → m + (n + p) ≡ n + (m + p)
++-swap m n p rewrite sym (+-assoc m n p) | sym (+-assoc n m p) | +-comm m n = refl
 ```
 
 
@@ -904,6 +907,19 @@ for all naturals `m`, `n`, and `p`.
 
 ```agda
 -- Your code goes here
+*-distrib-+ : ∀ (m n p : ℕ) → (m + n) * p ≡ m * p + n * p
+*-distrib-+ zero n p = refl
+*-distrib-+ (suc m) n p =
+  begin
+    (suc m + n) * p 
+  ≡⟨⟩
+    (suc (m + n)) * p
+  ≡⟨⟩
+    p + (m + n) * p
+  ≡⟨ cong (p +_) (*-distrib-+ m n p) ⟩
+    p + (m * p + n * p)
+  ≡⟨ sym (+-assoc p (m * p) (n * p)) ⟩
+    refl
 ```
 
 
@@ -917,6 +933,9 @@ for all naturals `m`, `n`, and `p`.
 
 ```agda
 -- Your code goes here
+*-assoc : ∀ (m n p : ℕ) → (m * n) * p ≡ m * (n * p)
+*-assoc zero n p = refl
+*-assoc (suc m) n p rewrite *-distrib-+ 1 m (n * p) | *-distrib-+ n (m * n) p | *-assoc m n p | +-identityʳ (n * p) = refl
 ```
 
 
@@ -931,6 +950,17 @@ you will need to formulate and prove suitable lemmas.
 
 ```agda
 -- Your code goes here
+*-zero-r : ∀ (n : ℕ) → n * zero ≡ zero
+*-zero-r zero = refl
+*-zero-r (suc n) rewrite *-distrib-+ 1 n zero | *-zero-r n = refl
+
+*-one-r : ∀ (m n : ℕ) → m * (suc n) ≡ m + m * n
+*-one-r zero n = refl
+*-one-r (suc m) n rewrite *-distrib-+ 1 m (suc n) | +-identityʳ n | *-one-r m n | sym (+-assoc n m (m * n)) | sym (+-assoc m n (m * n)) | +-comm n m = refl
+
+*-comm : ∀ (m n : ℕ) → m * n ≡ n * m
+*-comm zero n rewrite *-zero-r n = refl
+*-comm (suc m) n rewrite *-comm m n | *-one-r n m = refl
 ```
 
 
@@ -944,6 +974,10 @@ for all naturals `n`. Did your proof require induction?
 
 ```agda
 -- Your code goes here
+∸-zero-l : ∀ {n : ℕ} -> 0 ∸ n ≡ 0
+∸-zero-l {zero} = refl
+∸-zero-l {suc n} = refl
+
 ```
 
 
@@ -957,6 +991,10 @@ for all naturals `m`, `n`, and `p`.
 
 ```agda
 -- Your code goes here
+∸-+-assoc : ∀ (m n p : ℕ) -> m ∸ n ∸ p ≡ m ∸ (n + p)
+∸-+-assoc zero n p rewrite ∸-zero-l {n} | ∸-zero-l {n + p} | ∸-zero-l {p} = refl
+∸-+-assoc (suc m) zero p = refl
+∸-+-assoc (suc m) (suc n) p = ∸-+-assoc m n p
 ```
 
 
@@ -972,6 +1010,42 @@ for all `m`, `n`, and `p`.
 
 ```
 -- Your code goes here
+*-identity-r : ∀ (m : ℕ) → m * 1 ≡ m
+*-identity-r zero = refl
+*-identity-r (suc m) rewrite *-identity-r m = refl
+
+^-distrib-l-+-* : ∀ (m n p : ℕ) → m ^ (n + p) ≡ (m ^ n) * (m ^ p)
+^-distrib-l-+-* m zero zero = refl
+^-distrib-l-+-* m zero (suc p) rewrite +-comm zero (suc p) | +-identity′ (m * m ^ p) = refl
+^-distrib-l-+-* m (suc n) zero rewrite +-identity′ (suc n) | +-identity′ n | *-assoc m (m ^ n) 1 | *-identity-r (m ^ n) = refl
+^-distrib-l-+-* m (suc n) (suc p) rewrite
+    +-comm n (suc p)
+  | sym (*-assoc (m * m ^ n) m (m ^ p))
+  | +-comm p n
+  | ^-distrib-l-+-* m n p
+  | *-comm m (m ^ n * m ^ p)
+  | *-assoc (m ^ n) (m ^ p) m
+  | *-comm (m ^ p) m
+  | sym (*-assoc m (m ^ n) (m * m ^ p))
+  | sym (*-assoc (m * m ^ n) m (m ^ p)) = refl
+
+^-distrib-r-* : ∀ (m n p : ℕ) → (m * n) ^ p ≡ (m ^ p) * (n ^ p)
+^-distrib-r-* m n zero = refl
+^-distrib-r-* m n (suc p) rewrite
+    ^-distrib-r-* m n p
+  | *-assoc m (m ^ p) (n * n ^ p)
+  | sym (*-assoc (m ^ p) n (n ^ p))
+  | *-comm (m ^ p) n
+  | *-assoc m n (m ^ p * n ^ p)
+  | *-assoc n (m ^ p) (n ^ p) = refl
+
+one-^ : ∀ (p : ℕ) → 1 ^ p ≡ 1
+one-^ zero = refl
+one-^ (suc p) rewrite one-^ p = refl
+
+^-*-assoc : ∀ (m n p : ℕ) → (m ^ n) ^ p ≡ m ^ (n * p)
+^-*-assoc m zero p rewrite one-^ p = refl
+^-*-assoc m (suc n) p rewrite ^-distrib-l-+-* m 1 n | *-identity-r m | ^-distrib-r-* m (m ^ n) p | ^-*-assoc m n p | ^-distrib-l-+-* m p (n * p) = refl
 ```
 
 
@@ -997,6 +1071,49 @@ For each law: if it holds, prove; if not, give a counterexample.
 
 ```agda
 -- Your code goes here
+-- Had to paste this for some reason
+data Bin : Set where
+  ⟨⟩ : Bin
+  _O : Bin → Bin
+  _I : Bin → Bin
+
+inc : Bin → Bin
+inc ⟨⟩ = ⟨⟩ I
+inc (bin O) = bin I
+inc (bin I) = inc bin O
+
+to : ℕ → Bin
+to zero = ⟨⟩
+to (suc n) = inc (to n)
+
+from : Bin → ℕ
+from ⟨⟩ = zero
+from (b O) = 2 * (from b)
+from (b I) = suc (2 * (from b))
+
+inc-suc : ∀ (b : Bin) → from (inc b) ≡ suc (from b)
+inc-suc ⟨⟩ = refl
+inc-suc (b O) = refl
+inc-suc (b I) rewrite
+    inc-suc b
+  | sym (+-assoc (suc (from b)) (suc (from b)) 0)
+  | +-comm (from b) (suc (from b))
+  | +-identityʳ (suc (from b + from b))
+  | +-identityʳ (from b) = refl
+
+from-to-iso : ∀ (n : ℕ) → from (to n) ≡ n
+from-to-iso zero = refl
+from-to-iso (suc n) rewrite inc-suc (to n) | from-to-iso n = refl
+
+double-shiftL : ∀ (n : ℕ) → to (2 * n) ≡ to n O
+double-shiftL n = {!!}
+
+-- I am pretty sure we need to change representation to big endian to prove it
+-- and add a postulate that says that representations are equal
+-- Will revisit after I improve my agda skills, maybe I am wrong
+
+to-from-iso : ∀ (b : Bin) → to (from b) ≡ b
+to-from-iso b = {!!}
 ```
 
 
